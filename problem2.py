@@ -1,10 +1,11 @@
 import os
 from math import *
 
+depthe=10000
 #---reading training input---
 # tested 
 train=[]
-with open("circlemini.train") as f:
+with open("circle.train") as f:
   for line in f:
     sep=line.partition(' ')
     cl=int(sep[0])
@@ -58,10 +59,10 @@ def bestSpl(s): #tested on trainmini
       if gain>maxgain:
         maxgain=gain
         split=[1,y]
-  print maxgain,' ',base
+  #print maxgain,' ',base
   return split
 
-def TDIDT(s,depth):
+def TDIDT(s,depth): #tested on trainmini
   print depth
   node=[]
   if (depth==depthe):
@@ -70,7 +71,7 @@ def TDIDT(s,depth):
       if element[2]==1: count+=1
       else: count-=1
     if count>=0: node.append([1,[-1,-1],-1-1])
-    else: node.append([-1,[-1,-1],-1,1])
+    else: node.append([0,[-1,-1],-1,1])
   else:
     split=bestSpl(s)
     s1=[]
@@ -80,7 +81,7 @@ def TDIDT(s,depth):
       for element in s:
         if element[split[0]]<split[1]: s1.append(element)
         else: s2.append(element)
-      node.append([0,split,1,0])
+      node.append([-1,split,1,0])
       left=TDIDT(s1,depth+1)
       node[0][3]=1+len(left)
       node=node+left
@@ -88,7 +89,21 @@ def TDIDT(s,depth):
       node=node+right
   return node
 
-depthe=10000
-print TDIDT(train,0)
+def predict(tree,point):
+  index=0
+  while 1:
+    if tree[index][1][0]==-1: return tree[index][0]
+    if point[tree[index][1][0]]<tree[index][1][1]:
+      index+=tree[index][2]
+    else: index+=tree[index][3]
+
+tree1 = TDIDT(train,0)
+correct=0
+wrong=0
+for element in train:
+  if predict(tree1,element)==element[2]:
+    correct+=1
+  else: wrong+=1
     
+print correct,' ',wrong
 
