@@ -62,11 +62,12 @@ def bestSpl(s): #tested on trainmini
   return split
 
 def TDIDT(s,depth):
+  print depth
   node=[]
   if (depth==depthe):
     count=0
     for element in s:
-      if element[0]==1: count+=1
+      if element[2]==1: count+=1
       else: count-=1
     if count>=0: node.append([1,[-1,-1],-1-1])
     else: node.append([-1,[-1,-1],-1,1])
@@ -74,16 +75,17 @@ def TDIDT(s,depth):
     split=bestSpl(s)
     s1=[]
     s2=[]
-    if (split[0]==-1): node.append([s[0][0],[-1,-1],-1,-1])
-    for element in s:
-      if element[split[0]]<split[1]: s1.append(element)
-      else: s2.append(element)
-    node.append([0,split,1,0])
-    left=TDIDT(s1,depth+1)
-    node[0][3]=1+len(left)
-    node=node+left
-    right=TDIDT(s2,depth+1)
-    node=node+right
+    if (split[0]==-1): node.append([s[0][2],[-1,-1],-1,-1])
+    else:
+      for element in s:
+        if element[split[0]]<split[1]: s1.append(element)
+        else: s2.append(element)
+      node.append([0,split,1,0])
+      left=TDIDT(s1,depth+1)
+      node[0][3]=1+len(left)
+      node=node+left
+      right=TDIDT(s2,depth+1)
+      node=node+right
   return node
 
 depthe=10000
