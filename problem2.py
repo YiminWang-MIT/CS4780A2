@@ -162,6 +162,6 @@ for dtree in treelist:
   #print index,' ',correct,' ', wrong 
   treename="overfittingtree%d"%index
   if wrong>=35: gridplot(predict,treename,[dtree])
-
+#averaging tree
 gridplot(predict,"avgtree",treelist)
 
