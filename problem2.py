@@ -1,7 +1,7 @@
 import os
+import random
 from math import *
 
-depthe=10000
 #---reading training input---
 # tested 
 train=[]
@@ -63,7 +63,7 @@ def bestSpl(s): #tested on trainmini
   return split
 
 def TDIDT(s,depth): #tested on trainmini
-  print depth
+  #print depth
   node=[]
   if (depth==depthe):
     count=0
@@ -97,13 +97,71 @@ def predict(tree,point):
       index+=tree[index][2]
     else: index+=tree[index][3]
 
-tree1 = TDIDT(train,0)
-correct=0
-wrong=0
-for element in train:
-  if predict(tree1,element)==element[2]:
-    correct+=1
-  else: wrong+=1
-    
-print correct,' ',wrong
+def gridplot(fun,name,tree):
+  grid=200
+  data=name+".pdata"
+  gnucmd=name+",gcmd"
+  plotdata=file(data,'w')
+  for i in range(grid):
+    for j in range(grid):
+      x=i*10.0/grid
+      y=j*10.0/grid
+      point=[x,y,-1]
+      cl=0
+      for t in tree:
+        if fun(t,point)==1: cl+=1
+        else: cl-=1
+      if cl>=0: cl=1
+      else: cl=0
+      plotdata.write("%f %f %d\n"%(x,y,cl))
+  plotdata.close()
+  gnuc=file(gnucmd,'w')
+  gnuc.write("\
+set size ratio -1\n\
+set terminal png\n\
+set out '%s.png'\n\
+set palette model RGB defined (0 \"green\",1 \"blue\")\n\
+plot '%s.pdata' u 1:2:3 notitle with points pt 0 palette\n\
+unset out"%(name,name))
+  gnuc.close()
+  startgnuplot="gnuplot "+gnucmd
+  os.system(startgnuplot)
+
+def rdmgen(s):
+  snew=list(s)
+  stmp=[]
+  num=len(s)/5
+  for i in range(num):
+    index=int(random.uniform(0,len(snew)))
+    stmp.append(snew[index])
+    del snew[index]
+  return stmp
+
+  
+#---partA---
+depthe=10000
+tree1=[]
+tree1.append(TDIDT(train,0))
+gridplot(predict,"singletree",tree1)
+
+#---partB---
+treelist=[]
+for j in range(101):
+  tset=rdmgen(train)
+  treelist.append(TDIDT(tset,0))
+#overfitting tree
+index=0
+for dtree in treelist:
+  index+=1
+  correct=0
+  wrong=0
+  for element in train:
+    if predict(dtree,element)==element[2]:
+      correct+=1
+    else: wrong+=1
+  #print index,' ',correct,' ', wrong 
+  treename="overfittingtree%d"%index
+  if wrong>=35: gridplot(predict,treename,[dtree])
+
+gridplot(predict,"avgtree",treelist)
 
