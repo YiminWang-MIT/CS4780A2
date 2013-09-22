@@ -1,9 +1,18 @@
+#CS4780 Assignemt2 Problem2
+#Data Structure for TDIDT
+#The tree is implemented as a list of nodes.
+#Each node of the tree is a list which is in the following format
+#[int value, list split, int leftindex, int rightindex]
+#value: the prediction of the node: 1=+ 0=- -1=undecided
+#split: list in format [int,int] the first entry: 0=x 1=7
+#                                the second entry: the threshold value
+#leftindex: the relative index of the root node of left subtree (currentindex+leftindex gives the index in the tree list) 
+#rightindex: the relative index of the root node of right subtree 
 import os
 import random
 from math import *
 
 #---reading training input---
-# tested 
 train=[]
 with open("circle.train") as f:
   for line in f:
@@ -16,7 +25,7 @@ with open("circle.train") as f:
     train.append([x,y,cl]) 
 
 #---helper functions---
-def entropy(s):#tested
+def entropy(s):
   pos=0.0
   neg=0.0
   for element in s:
@@ -29,7 +38,7 @@ def entropy(s):#tested
   #print pos,' ',neg
   return en
 
-def bestSpl(s): #tested on trainmini
+def bestSpl(s): 
   base=entropy(s)
   if base==0: return [-1,-1] # return -1 when no more splitting is necessary
   #split in x
@@ -62,7 +71,7 @@ def bestSpl(s): #tested on trainmini
   #print maxgain,' ',base
   return split
 
-def TDIDT(s,depth): #tested on trainmini
+def TDIDT(s,depth):
   #print depth
   node=[]
   if (depth==depthe):
