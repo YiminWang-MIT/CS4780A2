@@ -4,17 +4,13 @@ from math import *
 
 #---reading input---
 train=[]
-ctgTrain=[]
 with open("groups.train") as f:
   index=0
-  #genreCountTrainStd=[0]*5
   for line in f:
-    #if index>=limit: break
     org=line
-    train.append([0]*2000)
+    train.append([0]*2001)
     sep=line.partition(' ')
-    ctgTrain.append(sep[0]) #add genre
-    #genreCountTrainStd[int(sep[0])]=genreCountTrainStd[int(sep[0])]+1
+    train[index][0]=int(sep[0])
     line=sep[2]
     while line.find(':')>=0:
       sep=line.partition(':')
@@ -23,22 +19,16 @@ with open("groups.train") as f:
       sep=line.partition(' ')
       train[index][vocabID]=int(sep[0])
       line=sep[-1]
-      #*************************print***************************
-      #print sep[0]
     index=index+1
 
 test=[]
-ctgTest=[]
 with open("groups.test") as f:
   index=0
-  #genreCountTrainStd=[0]*5
   for line in f:
-    #if index>=limit: break
     org=line
-    test.append([0]*2000)
+    test.append([0]*2001)
     sep=line.partition(' ')
-    ctgTest.append(sep[0]) #add genre
-    #genreCountTrainStd[int(sep[0])]=genreCountTrainStd[int(sep[0])]+1
+    test[index][0]=int(sep[0])
     line=sep[2]
     while line.find(':')>=0:
       sep=line.partition(':')
@@ -47,8 +37,6 @@ with open("groups.test") as f:
       sep=line.partition(' ')
       test[index][vocabID]=int(sep[0])
       line=sep[-1]
-      #*************************print***************************
-      #print sep[0]
     index=index+1
 
 wordlist=[]
@@ -64,50 +52,38 @@ with open("groups.vocab") as f:
 wordlist=sorted(wordlist, key=lambda x:x[0])
 #input parsing finished
 
+ctgmap=[0,1,2,-1,3] #helper list (real category=0,1,2,4)
+
 #---helper functions---
-def entropy(s):
-  pos=0.0
-  neg=0.0
+def entropy(s): #tested
+  ctg=[0.0,0.0,0.0,0.0]
   for element in s:
-    if element[2]: pos+=1
-    else: neg+=1
-  pos=pos/len(s)
-  neg=neg/len(s)
-  if (neg*pos==0): return 0
-  en=-pos*log(pos,2)-neg*log(neg,2)
+    ctg[ctgmap[element[0]]] += 1
+  en=0
+  for i in range(len(ctg)):
+    if ctg[i]!=0:
+      en = en - ctg[i] / len(s)  * log((ctg[i]/len(s)),2)
   #print pos,' ',neg
   return en
 
-def bestSpl(s): 
+def bestSpl(s,x):#finished not tested
   base=entropy(s)
   if base==0: return [-1,-1] # return -1 when no more splitting is necessary
-  #split in x
+  #split in 
   maxgain=0
   split=[-1,-1]
-  for x in range (1,10):
-    s1=[]
-    s2=[]
-    for element in s:
-      if element[0]<x: s1.append(element)
-      else: s2.append(element)
-    if (len(s1)*len(s2)>0):
-      gain=base-(entropy(s1)*len(s1)/len(s)+entropy(s2)*len(s2)/len(s))
-      if gain>maxgain:
-        maxgain=gain
-        split=[0,x]
-    
-  #split in y
-  for y in range (1,10):
-    s1=[]
-    s2=[]
-    for element in s:
-      if element[1]<y: s1.append(element)
-      else: s2.append(element)
-    if (len(s1)*len(s2)>0):
-      gain=base-(entropy(s1)*len(s1)/len(s)+entropy(s2)*len(s2)/len(s))
-      if gain>maxgain:
-        maxgain=gain
-        split=[1,y]
+  for i in range(x):
+    for j in range(len(wordlist)):
+      s1=[]
+      s2=[]
+      for element in s:
+        if element[i+1]>i: s1.append(element)
+        else: s2.append(element)
+      if (len(s1)*len(s2)>0):
+        gain=base-(entropy(s1)*len(s1)/len(s)+entropy(s2)*len(s2)/len(s))
+        if gain>maxgain:
+          maxgain=gain
+        split=[j,i]
   #print maxgain,' ',base
   return split
 
@@ -175,3 +151,15 @@ unset out"%(name,name))
   gnuc.close()
   startgnuplot="gnuplot "+gnucmd
   os.system(startgnuplot)
+  
+def rdmgen(s):
+  snew=list(s)
+  stmp=[]
+  num=len(s)/5
+  for i in range(num):
+    index=int(random.uniform(0,len(snew)))
+    stmp.append(snew[index])
+    del snew[index]
+  return stmp
+
+#---partA---
