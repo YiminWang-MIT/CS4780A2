@@ -17,7 +17,7 @@ with open("groups.train") as f:
       vocabID=int(sep[0])
       line=sep[-1]
       sep=line.partition(' ')
-      train[index][vocabID]=int(sep[0])
+      train[index][vocabID+1]=int(sep[0])
       line=sep[-1]
     index=index+1
 
@@ -35,7 +35,7 @@ with open("groups.test") as f:
       vocabID=int(sep[0])
       line=sep[-1]
       sep=line.partition(' ')
-      test[index][vocabID]=int(sep[0])
+      test[index][vocabID+1]=int(sep[0])
       line=sep[-1]
     index=index+1
 
@@ -63,7 +63,6 @@ def entropy(s): #tested
   for i in range(len(ctg)):
     if ctg[i]!=0:
       en = en - ctg[i] / len(s)  * log((ctg[i]/len(s)),2)
-  #print pos,' ',neg
   return en
 
 def bestSpl(s,x):#finished not tested
@@ -77,40 +76,38 @@ def bestSpl(s,x):#finished not tested
       s1=[]
       s2=[]
       for element in s:
-        if element[i+1]>i: s1.append(element)
+        if element[j+1]>i: s1.append(element)
         else: s2.append(element)
       if (len(s1)*len(s2)>0):
         gain=base-(entropy(s1)*len(s1)/len(s)+entropy(s2)*len(s2)/len(s))
         if gain>maxgain:
           maxgain=gain
-        split=[j,i]
-  #print maxgain,' ',base
+          split=[j,i]
   return split
 
-def TDIDT(s,depth):
+def TDIDT(s,depth,x):
   #print depth
   node=[]
   if (depth==depthe):
-    count=0
+    ctg=[0.0,0.0,0.0,0.0]
     for element in s:
-      if element[2]==1: count+=1
-      else: count-=1
-    if count>=0: node.append([1,[-1,-1],-1-1])
-    else: node.append([0,[-1,-1],-1,1])
+      ctg[ctgmap[element[0]]] += 1
+    ctg=sorted(enumerate(ctg), key=lambda x:x[1], reverse=False)
+    node.append([ctgmap.index(ctg[0][0]),[-1,-1],-1,-1])
   else:
-    split=bestSpl(s)
+    split=bestSpl(s,x)
     s1=[]
     s2=[]
-    if (split[0]==-1): node.append([s[0][2],[-1,-1],-1,-1])
+    if (split[0]==-1): node.append([s[0][0],[-1,-1],-1,-1])
     else:
       for element in s:
-        if element[split[0]]<split[1]: s1.append(element)
+        if element[split[0]+1]>split[1]: s1.append(element)
         else: s2.append(element)
       node.append([-1,split,1,0])
-      left=TDIDT(s1,depth+1)
+      left=TDIDT(s1,depth+1,x)
       node[0][3]=1+len(left)
       node=node+left
-      right=TDIDT(s2,depth+1)
+      right=TDIDT(s2,depth+1,x)
       node=node+right
   return node
 
@@ -118,39 +115,9 @@ def predict(tree,point):
   index=0
   while 1:
     if tree[index][1][0]==-1: return tree[index][0]
-    if point[tree[index][1][0]]<tree[index][1][1]:
+    if point[tree[index][1][0]+1]>tree[index][1][1]:
       index+=tree[index][2]
     else: index+=tree[index][3]
-
-def gridplot(fun,name,tree):
-  grid=200
-  data=name+".pdata"
-  gnucmd=name+",gcmd"
-  plotdata=file(data,'w')
-  for i in range(grid):
-    for j in range(grid):
-      x=i*10.0/grid
-      y=j*10.0/grid
-      point=[x,y,-1]
-      cl=0
-      for t in tree:
-        if fun(t,point)==1: cl+=1
-        else: cl-=1
-      if cl>=0: cl=1
-      else: cl=0
-      plotdata.write("%f %f %d\n"%(x,y,cl))
-  plotdata.close()
-  gnuc=file(gnucmd,'w')
-  gnuc.write("\
-set size ratio -1\n\
-set terminal png\n\
-set out '%s.png'\n\
-set palette model RGB defined (0 \"green\",1 \"blue\")\n\
-plot '%s.pdata' u 1:2:3 notitle with points pt 0 palette\n\
-unset out"%(name,name))
-  gnuc.close()
-  startgnuplot="gnuplot "+gnucmd
-  os.system(startgnuplot)
   
 def rdmgen(s):
   snew=list(s)
@@ -161,5 +128,33 @@ def rdmgen(s):
     stmp.append(snew[index])
     del snew[index]
   return stmp
-
 #---partA---
+print 'partA'
+depthe=10000
+tree1=TDIDT(train,0,1)
+wrong=0
+for element in test:
+  ctgr=predict(tree1,element)
+  if ctgr!=element[0]: wrong+=1
+print wrong
+#---partB---
+print 'partB'
+print 'top 2 levels'
+leftroot=tree1[tree1[0][2]]
+rightroot=tree1[tree1[0][3]]
+print 'level1:'
+print '    '+wordlist[tree1[0][1][0]][1]
+print 'level2:'
+print '    '+wordlist[rightroot[1][0]][1]
+print '    '+wordlist[leftroot[1][0]][1]
+
+#---partC---
+print 'partC'
+depthe=10
+tree2=TDIDT(train,0,1)
+wrong=0
+for element in test:
+  ctgr=predict(tree2,element)
+  if ctgr!=element[0]: wrong+=1
+print wrong
+

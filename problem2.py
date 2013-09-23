@@ -79,7 +79,7 @@ def TDIDT(s,depth):
     for element in s:
       if element[2]==1: count+=1
       else: count-=1
-    if count>=0: node.append([1,[-1,-1],-1-1])
+    if count>=0: node.append([1,[-1,-1],-1,-1])
     else: node.append([0,[-1,-1],-1,1])
   else:
     split=bestSpl(s)
