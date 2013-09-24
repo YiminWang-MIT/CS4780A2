@@ -1,0 +1,8 @@
+set xlabel 'Max Depth'
+set ylabel 'Accuracy'
+set xrange [0:90]
+set terminal png
+set style line 1 pt 3
+set out 'p3f.png'
+plot 'p3f.data' u 1:2 title 'Accuracy vs Depth' with linespoints
+unset out

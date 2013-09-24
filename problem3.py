@@ -1,3 +1,14 @@
+#CS4780 Assignemt2 Problem3
+#Data Structure for TDIDT
+#The tree is implemented as a list of nodes.
+#Each node of the tree is a list which is in the following format
+#[int value, list split, int leftindex, int rightindex, int depth]
+#value: the prediction of the node: 1=+ 0=- -1=undecided
+#split: list in format [int,int] the first entry: 0=x 1=7
+#                                the second entry: the threshold value
+#leftindex: the relative index of the root node of left subtree (currentindex+leftindex gives the index in the tree list) 
+#rightindex: the relative index of the root node of right subtree 
+import os
 import os
 import random
 from math import *
@@ -92,18 +103,18 @@ def TDIDT(s,depth,x):
     ctg=[0.0,0.0,0.0,0.0]
     for element in s:
       ctg[ctgmap[element[0]]] += 1
-    ctg=sorted(enumerate(ctg), key=lambda x:x[1], reverse=False)
-    node.append([ctgmap.index(ctg[0][0]),[-1,-1],-1,-1])
+    ctg=sorted(enumerate(ctg), key=lambda x:x[1], reverse=True)
+    node.append([ctgmap.index(ctg[0][0]),[-1,-1],-1,-1,depth])
   else:
     split=bestSpl(s,x)
     s1=[]
     s2=[]
-    if (split[0]==-1): node.append([s[0][0],[-1,-1],-1,-1])
+    if (split[0]==-1): node.append([s[0][0],[-1,-1],-1,-1,depth])
     else:
       for element in s:
         if element[split[0]+1]>split[1]: s1.append(element)
         else: s2.append(element)
-      node.append([-1,split,1,0])
+      node.append([-1,split,1,0,depth])
       left=TDIDT(s1,depth+1,x)
       node[0][3]=1+len(left)
       node=node+left
@@ -135,7 +146,7 @@ def partition(s,k):
   return result
 
 #---partA---
-print 'partA'
+print '\n====partA'
 depthe=10000
 tree1=TDIDT(train,0,1)
 wrong=0.0
@@ -143,9 +154,12 @@ for element in test:
   ctgr=predict(tree1,element)
   if ctgr!=element[0]: wrong+=1
 print 'Accuracy=',1.0-wrong/len(test)
-
+maxdp=0
+for node in tree1:
+  if node[4]>maxdp: maxdp=node[4] 
+print 'Max depth',maxdp
 #---partB---
-print 'partB'
+print '\n====partB'
 print 'top 2 levels'
 leftroot=tree1[tree1[0][2]]
 rightroot=tree1[tree1[0][3]]
@@ -154,19 +168,33 @@ print '    '+wordlist[tree1[0][1][0]][1]
 print 'level2:'
 print '    '+wordlist[rightroot[1][0]][1]
 print '    '+wordlist[leftroot[1][0]][1]
+print 'bottom 2 levels'
+print 'level-2:'
+for node in tree1:
+  if node[4]==(maxdp-2): 
+    print '    '+wordlist[node[1][0]][1]
+print 'level-1:'
+for node in tree1:
+  if node[4]==(maxdp-1): 
+    print '    '+wordlist[node[1][0]][1]
 
 #---partC---
-print 'partC'
+print '\n====partC'
 depthe=10
 tree2=TDIDT(train,0,1)
+wrong=0.0
+for element in train:
+  ctgr=predict(tree2,element)
+  if ctgr!=element[0]: wrong+=1
+print 'Train Accuracy=',1.0-wrong/len(test)
 wrong=0.0
 for element in test:
   ctgr=predict(tree2,element)
   if ctgr!=element[0]: wrong+=1
-print 'Accuracy=',1.0-wrong/len(test)
+print 'Test Accuracy=',1.0-wrong/len(test)
 
 #---partD---
-print 'partD'
+print '\n====partD'
 miss=[[0.0,0.0],[0.0,0.0]]
 for element in test:
   c1=int(predict(tree1,element)==element[0])
@@ -177,7 +205,7 @@ chisq=(miss[1][0]-miss[0][1])**2/(miss[0][1]+miss[1][0])
 print chisq
 
 #---partE---
-print 'partE'
+print '\n====partE'
 k=5
 sets=partition(train+test,k)
 sigma=[]
@@ -202,4 +230,24 @@ sigmastd=(sigmastd/(k**2-k))**0.5
 print sigma
 print 'mean=', sigmamean
 print 'std=', sigmastd
+
+#---partF---
+print '\n====partF'
+depthset=[2,3,5,10,50,80]
+accset=[]
+for depthe in depthset:
+  print depthe
+  err=0.0
+  for aset in sets:
+    tmptrain=aset[0]
+    tmptest=aset[1]
+    treeF=TDIDT(tmptrain,0,1)
+    wrongF=0.0
+    for element in tmptest:
+      ctgr=predict(treeF,element)
+      if ctgr!=element[0]: wrongF+=1
+    err+=wrongF/len(tmptest)/k
+  accset.append(1.0-err)
+print depthset
+print accset
 
