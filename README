@@ -1,0 +1,28 @@
+README FILE
+
+CS4780 ASSIGNMENT2
+
+Feiran Chen, fc254
+Yimin Wang, yw475
+-------------------------------------------
+Problem2
+problem2.py
+
+Environment requirement:
+python 2.6+
+gnuplot for ploting decision boundary 
+
+Output files:
+singletree.png   # png image of part a
+overfittingtree#.png    # png image of overfittting trees
+averagetree.png   # png image of averaging decision tree
+
+-------------------------------------------
+Problem3
+problem3.py
+
+Environment requirement:
+python 2.6+
+
+Output files:
+None #all output directly printed to the screen

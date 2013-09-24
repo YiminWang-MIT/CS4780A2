@@ -206,6 +206,19 @@ print chisq
 
 #---partE---
 print '\n====partE'
+depthe=10
+tree3=TDIDT(train,0,2)
+wrong=0.0
+for element in train:
+  ctgr=predict(tree3,element)
+  if ctgr!=element[0]: wrong+=1
+print 'Train Accuracy=',1.0-wrong/len(test)
+wrong=0.0
+for element in test:
+  ctgr=predict(tree3,element)
+  if ctgr!=element[0]: wrong+=1
+print 'Test Accuracy=',1.0-wrong/len(test)
+print '\n---k-fold----'
 k=5
 sets=partition(train+test,k)
 sigma=[]
